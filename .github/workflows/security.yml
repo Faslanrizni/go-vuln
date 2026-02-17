@@ -27,7 +27,7 @@ jobs:
 
   security:
     needs: build
-    uses: Faslanrizni/security-guardrails/.github/security-orchestrator.yml@main
+    uses: Faslanrizni/security-guardrails/ci/github/security-orchestrator.yml@main
     with:
       image-ref: myapp:${{ github.sha }}
     secrets:
