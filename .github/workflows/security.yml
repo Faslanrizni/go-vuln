@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
       security-events: write      # ← required for trivy SARIF upload to work
-    uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@main
+    uses: Faslanrizni/security-guardrails/.github/workflows/security-orchestrator.yml@main
     with:
       image-ref: myapp:${{ github.sha }}
     secrets:
