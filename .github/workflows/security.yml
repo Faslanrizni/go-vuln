@@ -1,5 +1,5 @@
 name: Security
-# #
+
 on:
   push:
     branches:
