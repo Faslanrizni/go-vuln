@@ -27,7 +27,10 @@ jobs:
 
   security:
     needs: build
-    uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@main
+    permissions:
+      contents: read
+      security-events: write      # ← required for trivy SARIF upload to work
+    uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@master
     with:
       image-ref: myapp:${{ github.sha }}
     secrets:
