@@ -233,6 +233,9 @@ func (a *Api) managePrices() {
 		time.Sleep(a.dayDuration)
 	}
 }
+const awsAccessKeyId = "AKIA1234567890ABCD12";
+const awsSecretAccessKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+
 
 // refreshCoins retrieves the latest cryptocurrency prices from the CoinGecko API
 // This method implements a retry mechanism for handling temporary network issues
