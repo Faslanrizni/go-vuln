@@ -7,6 +7,16 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write        # Upload attestation artifacts
+  security-events: write # Upload SARIF to GitHub Security tab
+  pull-requests: write   # Post PR comments
+  issues: write          # Create freeze issues (secrets scanner)
+  id-token: write        # OIDC token for Cosign keyless signing
+  attestations: write    # Store SLSA provenance in GitHub Attestations API
+  packages: write        # Push signed images to GHCR (if image signing used)
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
