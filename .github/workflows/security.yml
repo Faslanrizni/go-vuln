@@ -45,6 +45,6 @@ jobs:
     #   id-token: write
     uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@testing
     with:
-      image-ref: ${{ needs.build.outputs.image-ref }}
+      image-ref: myapp:${{ github.sha }}
     secrets:
       FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
