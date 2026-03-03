@@ -118,7 +118,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 )
-
+// 
 // Api represents the main API structure that handles all HTTP requests and business logic
 // This struct is designed to manage the cryptocurrency price API with virtual time simulation
 type Api struct {
