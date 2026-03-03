@@ -214,7 +214,7 @@ func (a *Api) Shutdown() {
 	a.db.Close()
 	log.Println("Database connection closed successfully")
 }
-
+// testing
 // managePrices handles the background process of updating cryptocurrency prices
 // This daemon runs continuously and simulates the passage of time for price changes
 func (a *Api) managePrices() {
