@@ -2,7 +2,7 @@ name: FOSSA Image Scan
 
 on:
   push:
-    branches: [ main ]
+    branches: [ test/trivy-scan ]
 
 jobs:
   fossa-image:
