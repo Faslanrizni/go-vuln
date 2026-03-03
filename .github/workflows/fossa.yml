@@ -1,0 +1,29 @@
+name: FOSSA Image Scan
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+    
+  fossa-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t my-app:latest .
+
+      - name: Install FOSSA CLI
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+
+      - name: Scan Docker Image
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: |
+          fossa container analyze my-app:latest
+          fossa test
