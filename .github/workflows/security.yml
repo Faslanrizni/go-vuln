@@ -120,7 +120,13 @@ jobs:
     # supply-chain-provenance signing.
     uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@testing
     with:
-      # Now a real GHCR ref — Trivy can pull it, Cosign can sign it
-      image-ref: ${{ needs.build.outputs.image-ref }}
+      enable-fossa: true
     secrets:
       FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+    # with:
+    #   # Now a real GHCR ref — Trivy can pull it, Cosign can sign it
+    #   image-ref: ${{ needs.build.outputs.image-ref }}
+    # secrets:
+    #   FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+
+    
