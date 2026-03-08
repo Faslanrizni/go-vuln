@@ -26,35 +26,35 @@
 #           fossa container analyze my-app:latest --project security-guardrails-poc
 #           fossa test --project security-guardrails-poc
 
-# name: FOSSA Image Scan
+name: FOSSA Image Scan
 
-# on:
-#   push:
-#     branches: [ test/trivy-scan ]
+on:
+  push:
+    branches: [ test/trivy-scan ]
 
-# jobs:
-#   fossa-image:
-#     runs-on: ubuntu-latest
+jobs:
+  fossa-image:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Build Docker Image
-#         run: docker build -t my-app:latest .
+      - name: Build Docker Image
+        run: docker build -t my-app:latest .
 
-#       - name: Install FOSSA CLI v3
-#         run: |
-#           curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
-#           echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install FOSSA CLI v3
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-#       - name: Scan Docker Image
-#         env:
-#           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-#         run: |
-#           fossa container analyze my-app:latest \
-#             --project security-guardrails-poc \
-#             --revision $GITHUB_SHA
+      - name: Scan Docker Image
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: |
+          fossa container analyze my-app:latest \
+            --project security-guardrails-poc \
+            --revision $GITHUB_SHA
 
-#           fossa test \
-#             --project security-guardrails-poc \
-#             --revision $GITHUB_SHA
+          fossa test \
+            --project security-guardrails-poc \
+            --revision $GITHUB_SHA
