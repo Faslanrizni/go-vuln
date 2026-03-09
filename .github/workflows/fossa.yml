@@ -83,19 +83,34 @@ jobs:
       - name: Verify FOSSA CLI version
         run: fossa --version
 
-      - name: Save Docker image to file
-        run: docker save my-app:latest -o image.tar
-
-      - name: Scan Docker Image (from tar file)
+      # ── Analyze Go source dependencies (catches go.mod/go.sum deps) ──────
+      - name: Analyze Source
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
         run: |
-          # Scan from the tar file instead of directly from Docker
+          fossa analyze \
+            --project security-guardrails-poc \
+            --revision $GITHUB_SHA \
+            --branch $GITHUB_REF_NAME
+
+      # ── Analyze container image (catches OS/Alpine layer) ─────────────────
+      - name: Save Docker image to tar
+        run: docker save my-app:latest -o image.tar
+
+      - name: Analyze Container Image (OS layer)
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: |
           fossa container analyze image.tar \
             --project security-guardrails-poc \
             --revision $GITHUB_SHA \
             --debug
 
+      # ── Gate: fail if any security or license issues found ────────────────
+      - name: FOSSA Test (fail on issues)
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: |
           fossa test \
             --project security-guardrails-poc \
             --revision $GITHUB_SHA
