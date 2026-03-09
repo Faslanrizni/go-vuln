@@ -83,18 +83,19 @@ jobs:
       - name: Verify FOSSA CLI version
         run: fossa --version
 
-      - name: Scan Docker Image (with app dependency detection)
+      - name: Save Docker image to file
+        run: docker save my-app:latest -o image.tar
+
+      - name: Scan Docker Image (from tar file)
         env:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
         run: |
-          # The latest FOSSA CLI automatically detects both OS and application dependencies
-          # No special flags needed - the container scanner is improved in v3.8.5+
-          fossa container analyze my-app:latest \
+          # Scan from the tar file instead of directly from Docker
+          fossa container analyze image.tar \
             --project security-guardrails-poc \
             --revision $GITHUB_SHA \
-            --debug  # Add debug flag to see what's being detected
+            --debug
 
-          # Wait for analysis to complete and check results
           fossa test \
             --project security-guardrails-poc \
             --revision $GITHUB_SHA
