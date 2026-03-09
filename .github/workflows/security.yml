@@ -1,3 +1,55 @@
+# name: Security
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#   workflow_dispatch:
+
+# permissions:
+#   contents: write        # Upload attestation artifacts
+#   security-events: write # Upload SARIF to GitHub Security tab
+#   pull-requests: write   # Post PR comments
+#   issues: write          # Create freeze issues (secrets scanner)
+#   id-token: write        # OIDC token for Cosign keyless signing
+#   attestations: write    # Store SLSA provenance in GitHub Attestations API
+#   packages: write        # Push signed images to GHCR (if image signing used)
+
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Build Docker image
+#         run: |
+#           docker build -t myapp:${{ github.sha }} .
+#           docker save myapp:${{ github.sha }} -o /tmp/image.tar
+
+#       - name: Upload image artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: docker-image
+#           path: /tmp/image.tar
+#           retention-days: 1
+
+#   security:
+#     needs: build
+#     # permissions:
+#     #   contents: read
+#     #   security-events: write    
+#     #   pull-requests: write 
+#     #   issues: write  
+#     #   id-token: write
+#     uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@testing
+#     with:
+#       image-ref: myapp:${{ github.sha }}
+#     secrets:
+#       FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+
+
 name: Security
 
 on:
@@ -7,16 +59,45 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  security-events: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  attestations: write
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      image-ref: ${{ steps.set-ref.outputs.ref }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image ref
+        id: set-ref
         run: |
-          docker build -t myapp:${{ github.sha }} .
-          docker save myapp:${{ github.sha }} -o /tmp/image.tar
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "ref=ghcr.io/${REPO}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to GHCR
+        run: |
+          docker build -t "${{ steps.set-ref.outputs.ref }}" .
+          docker push "${{ steps.set-ref.outputs.ref }}"
+          echo "Image pushed: ${{ steps.set-ref.outputs.ref }}"
+
+      - name: Save image artifact
+        run: docker save "${{ steps.set-ref.outputs.ref }}" -o /tmp/image.tar
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
@@ -27,11 +108,10 @@ jobs:
 
   security:
     needs: build
-    permissions:
-      contents: read
-      security-events: write      # ← required for trivy SARIF upload to work
     uses: Faslanrizni/security-guardrails-faslan/.github/workflows/security-orchestrator.yml@testing
     with:
-      image-ref: myapp:${{ github.sha }}
+      image-ref: ${{ needs.build.outputs.image-ref }}   # real GHCR ref — Trivy image scan + Cosign signing
+      artifact-path: ""
+      enable-fossa: true                                 # un-skips the FOSSA job
     secrets:
       FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
