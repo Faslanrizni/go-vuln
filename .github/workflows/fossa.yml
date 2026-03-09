@@ -58,3 +58,48 @@
 #           fossa test \
 #             --project security-guardrails-poc \
 #             --revision $GITHUB_SHA
+
+name: FOSSA Image Scan
+
+on:
+  push:
+    branches: [ test/trivy-scan ]
+
+jobs:
+  fossa-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t my-app:latest .
+
+      - name: Install FOSSA CLI v3 (latest)
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify FOSSA CLI version
+        run: fossa --version
+
+      - name: Scan Docker Image (with app dependency detection)
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: |
+          # The latest FOSSA CLI automatically detects both OS and application dependencies
+          # No special flags needed - the container scanner is improved in v3.8.5+
+          fossa container analyze my-app:latest \
+            --project security-guardrails-poc \
+            --revision $GITHUB_SHA \
+            --debug  # Add debug flag to see what's being detected
+
+          # Wait for analysis to complete and check results
+          fossa test \
+            --project security-guardrails-poc \
+            --revision $GITHUB_SHA
+
+      - name: Upload FOSSA report URL
+        if: always()
+        run: |
+          echo "FOSSA Report: https://app.fossa.com/projects/custom%2B28356%2Fsecurity-guardrails-poc/refs/branch/master/$GITHUB_SHA"
